@@ -3,7 +3,7 @@ import { open as openDialog } from '@tauri-apps/plugin-dialog'
 import { Close, Spinner, Upload } from '../Icons'
 import { backend } from '../../lib/backend'
 import { AVATAR_EXTENSIONS, mimeForImage } from '../../lib/accounts'
-import { ICON_PALETTE, imageToIcon, isIcon } from '../../lib/icons'
+import { ICON_PALETTE, imageToIcon, isIcon, normalizeIcon, sameEmoji } from '../../lib/icons'
 import { useToast } from '../../hooks/useToast'
 
 const MAX_PICTURE_BYTES = 20 * 1024 * 1024
@@ -12,7 +12,10 @@ const MAX_PICTURE_BYTES = 20 * 1024 * 1024
  * Renders whatever an icon is, or `fallback` when there is none. Used for
  * projects, conversations and models alike, so the three never drift apart.
  */
-export function IconGlyph({ icon, size = 16, fallback = null, className = '' }) {
+export function IconGlyph({ icon: stored, size = 16, fallback = null, className = '' }) {
+  // Normalised on the way out rather than on the way in, so an icon saved by an
+  // older build renders correctly without having to rewrite `library.json`.
+  const icon = normalizeIcon(stored)
   if (isIcon(icon) && icon.kind === 'image') {
     return (
       <img
@@ -99,7 +102,7 @@ export function IconPicker({ value, onChange, fallback = null, label = 'Icon' })
                   key={e}
                   type="button"
                   className={`iconpick-cell${
-                    value?.kind === 'emoji' && value.value === e ? ' on' : ''
+                    value?.kind === 'emoji' && sameEmoji(value.value, e) ? ' on' : ''
                   }`}
                   onClick={() => onChange({ kind: 'emoji', value: e })}
                   title={e}

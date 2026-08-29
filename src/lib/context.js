@@ -157,15 +157,27 @@ export function buildRequest({
   }
 }
 
+/**
+ * Cost of everything in the next message except the text being typed.
+ *
+ * Split out from `estimatePayload` because the composer re-costs its budget on
+ * every keystroke, and none of this changes between them. Re-scanning a long
+ * conversation and the extracted text of a large PDF on each key is what makes
+ * typing lag in a conversation that has been going for a while.
+ */
+export function estimateFixed({ attachments = [], history = [], systemPrompt = '' }) {
+  return {
+    attachTokens: attachments.reduce((s, a) => s + estimateTokens(a.text) + 12, 0),
+    historyTokens: history.reduce((s, m) => s + estimateMessageTokens(m), 0),
+    systemTokens: systemPrompt ? estimateTokens(systemPrompt) : 0,
+  }
+}
+
 /** Cheap pre-send estimate for the composer's live warning. */
-export function estimatePayload({ userText, attachments, history, systemPrompt, contextWindow }) {
+export function estimatePayload({ userText, fixed, contextWindow }) {
   const reserve = replyReserve(contextWindow)
-  const attachTokens = attachments.reduce((s, a) => s + estimateTokens(a.text) + 12, 0)
-  const total =
-    estimateTokens(userText) +
-    attachTokens +
-    (systemPrompt ? estimateTokens(systemPrompt) : 0) +
-    history.reduce((s, m) => s + estimateMessageTokens(m), 0)
+  const { attachTokens, historyTokens, systemTokens } = fixed
+  const total = estimateTokens(userText) + attachTokens + historyTokens + systemTokens
   return {
     total,
     attachTokens,

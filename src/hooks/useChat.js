@@ -18,6 +18,15 @@ export function useChat({ project, chat, index, pinnedPaths, dispatch }) {
   const frameRef = useRef(0)
   const targetRef = useRef(null)
 
+  // The reducer rebuilds the path down to the message it patched, so `project`
+  // and `chat` are different objects on every streamed frame. Reading them
+  // through a ref is what keeps `send` and `regenerate` stable: `onRegenerate`
+  // arriving at every message as a fresh function would defeat
+  // `memo(ChatMessage)` and re-render — and re-highlight — the whole thread
+  // sixty times a second.
+  const live = useRef(null)
+  live.current = { project, chat, index, pinnedPaths, streaming }
+
   const flush = useCallback(() => {
     frameRef.current = 0
     const target = targetRef.current
@@ -59,9 +68,9 @@ export function useChat({ project, chat, index, pinnedPaths, dispatch }) {
         attachments,
         history,
         systemPrompt: settings.systemPrompt,
-        index,
-        projectName: project?.folder?.name || '',
-        pinnedPaths,
+        index: live.current.index,
+        projectName: live.current.project?.folder?.name || '',
+        pinnedPaths: live.current.pinnedPaths ?? [],
         contextWindow: settings.contextWindow,
       })
 
@@ -161,11 +170,12 @@ export function useChat({ project, chat, index, pinnedPaths, dispatch }) {
       }
       return !aborted
     },
-    [dispatch, index, pinnedPaths, project, schedule, bump],
+    [dispatch, schedule, bump],
   )
 
   const send = useCallback(
     async ({ text, attachments = [] }) => {
+      const { project, chat, streaming } = live.current
       if (!project || !chat || streaming) return
       const userText = text.trim()
       if (!userText) return
@@ -197,12 +207,13 @@ export function useChat({ project, chat, index, pinnedPaths, dispatch }) {
         settings: project.settings,
       })
     },
-    [project, chat, streaming, dispatch, run, bump],
+    [dispatch, run, bump],
   )
 
   /** Re-runs the turn that produced `assistantId`, replacing its reply. */
   const regenerate = useCallback(
     async (assistantId) => {
+      const { project, chat, streaming } = live.current
       if (!project || !chat || streaming) return
       const i = chat.messages.findIndex((m) => m.id === assistantId)
       if (i < 1) return
@@ -231,7 +242,7 @@ export function useChat({ project, chat, index, pinnedPaths, dispatch }) {
         settings: project.settings,
       })
     },
-    [project, chat, streaming, dispatch, run],
+    [dispatch, run],
   )
 
   const stop = useCallback(() => abortRef.current?.abort(), [])

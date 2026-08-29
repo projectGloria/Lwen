@@ -210,7 +210,12 @@ export function selectContext({
 
   const take = (file, reason) => {
     const text = index.texts[file.idx]
-    const cost = estimate(text) + estimate(file.rel) + 12
+    // Cached on the index entry: estimating a token count means walking the
+    // whole file, and the same forty candidates get re-costed on every message
+    // sent against an index that has not changed. The index is rebuilt from
+    // scratch whenever the folder is rescanned, so the cache cannot go stale.
+    if (file.tokens === undefined) file.tokens = estimate(text) + estimate(file.rel) + 12
+    const cost = file.tokens
     if (used + cost > budgetTokens) {
       excluded.push({ rel: file.rel, path: file.path, reason: 'budget' })
       return false

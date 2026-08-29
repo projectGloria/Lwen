@@ -23,6 +23,9 @@ const PLAIN_SUGGESTIONS = [
   { label: 'Review my writing', text: 'I am going to paste some writing. Tell me what is weak about it.' },
 ]
 
+/** How long a wheel/touch/key counts as the cause of the scroll it triggers. */
+const GESTURE_MS = 700
+
 export function MessageList({ chat, hasProject, onSuggest, onRegenerate, onOpenFile, streaming }) {
   const scroller = useRef(null)
   const column = useRef(null)
@@ -40,6 +43,16 @@ export function MessageList({ chat, hasProject, onSuggest, onRegenerate, onOpenF
   const wantAlign = useRef(false)
   const prevChat = useRef(null)
   const prevTurn = useRef(null)
+  // Our own scrollTo fires scroll events too, so "the reader scrolled away" is
+  // only believed when a real gesture happened just before it. `away` is the
+  // conclusion that check reaches, and it has to persist: whether to start
+  // following the tail is decided long after the wheel stopped turning.
+  const away = useRef(false)
+  const gesture = useRef(0)
+  const gestureRecent = useCallback(() => performance.now() - gesture.current < GESTURE_MS, [])
+  const markGesture = useCallback(() => {
+    gesture.current = performance.now()
+  }, [])
 
   const messages = chat?.messages ?? []
   const lastUser = [...messages].reverse().find((m) => m.role === 'user')
@@ -64,7 +77,17 @@ export function MessageList({ chat, hasProject, onSuggest, onRegenerate, onOpenF
       const turnHeight = col.getBoundingClientRect().bottom - anchor.current.getBoundingClientRect().top
       // `turnHeight` already carries the column's bottom padding, so TOP_GAP is
       // the only room that still has to be reserved.
-      pad.style.height = `${Math.max(0, el.clientHeight - turnHeight - TOP_GAP)}px`
+      const room = el.clientHeight - turnHeight - TOP_GAP
+      if (room > 0) {
+        pad.style.height = `${room}px`
+      } else {
+        // The answer has outgrown the viewport, so the question can no longer
+        // stay pinned at the top. Hand over to following the tail — otherwise
+        // the reply just grows on past the bottom edge and the view sits still.
+        pinned.current = false
+        pad.style.height = '0px'
+        if (!away.current) follow.current = true
+      }
     } else {
       pad.style.height = '0px'
     }
@@ -108,6 +131,8 @@ export function MessageList({ chat, hasProject, onSuggest, onRegenerate, onOpenF
       pinned.current = false
       follow.current = false
       wantAlign.current = false
+      away.current = false
+      gesture.current = 0
       measure()
       toEnd('instant')
       return
@@ -119,6 +144,12 @@ export function MessageList({ chat, hasProject, onSuggest, onRegenerate, onOpenF
         pinned.current = true
         follow.current = false
         wantAlign.current = true
+        // Asking a new question is a fresh start: whatever the reader was
+        // looking at before, they are waiting on this answer now. The gesture
+        // stamp goes too — Regenerate sits inside the scroller, and the click
+        // that started this turn must not read as scrolling away from it.
+        away.current = false
+        gesture.current = 0
       }
     }
   }, [chat?.id, turnKey, anchorId, afterAnchor, measure, toEnd])
@@ -155,11 +186,21 @@ export function MessageList({ chat, hasProject, onSuggest, onRegenerate, onOpenF
     if (!el || !col) return
     const end = col.getBoundingClientRect().bottom - el.getBoundingClientRect().bottom < NEAR_BOTTOM
     setAtEnd(end)
-    // Scrolling away by hand stops the view chasing the stream.
-    if (!end) follow.current = false
-  }, [])
+    // Scrolling away by hand stops the view chasing the stream — but only when
+    // it really was by hand. Coming back to the tail starts it again, so the
+    // jump button and a flick of the wheel both end up in the same state.
+    if (end) {
+      away.current = false
+      follow.current = !pinned.current
+    } else if (gestureRecent()) {
+      away.current = true
+      follow.current = false
+    }
+  }, [gestureRecent])
 
   const jump = () => {
+    pinned.current = false
+    away.current = false
     follow.current = true
     toEnd('smooth')
   }
@@ -193,7 +234,15 @@ export function MessageList({ chat, hasProject, onSuggest, onRegenerate, onOpenF
   const lastAssistant = [...messages].reverse().find((m) => m.role === 'assistant')
 
   return (
-    <div className="messages" ref={scroller} onScroll={onScroll}>
+    <div
+      className="messages"
+      ref={scroller}
+      onScroll={onScroll}
+      onWheel={markGesture}
+      onTouchMove={markGesture}
+      onPointerDown={markGesture}
+      onKeyDown={markGesture}
+    >
       <div className="msg-col" ref={column}>
         {messages.map((m) => (
           <ChatMessage

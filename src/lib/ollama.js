@@ -162,6 +162,12 @@ export async function streamChat({ model, messages, options, signal, onChunk }) 
         }
       }
     }
+  } catch (e) {
+    // An error thrown out of the loop — an `error` field mid-stream, or an
+    // abort — leaves the body half-read. Cancelling it releases the connection
+    // instead of holding it open until the process exits.
+    reader.cancel().catch(() => {})
+    throw e
   } finally {
     reader.releaseLock()
   }

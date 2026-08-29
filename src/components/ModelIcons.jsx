@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { normalizeIcon } from '../lib/icons'
 
 /**
  * Family marks for the models Ollama serves, so a list of `qwen3:8b`,
@@ -301,7 +302,10 @@ export function BrandMark({ brand, size = 16, title }) {
  * family mark: the built-in glyphs guess a family from the model's name, and a
  * fine-tune or a local build often defeats that guess.
  */
-export function ModelIcon({ model, size = 16, custom = null }) {
+export function ModelIcon({ model, size = 16, custom: stored = null }) {
+  // Same normalisation as `IconGlyph`: a mark picked before the palette carried
+  // its variation selectors must still render as colour emoji.
+  const custom = normalizeIcon(stored)
   if (custom?.kind === 'image' && custom.value) {
     return (
       <img

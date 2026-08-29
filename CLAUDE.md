@@ -10,9 +10,13 @@ npm run tauri dev           # full app: Vite on :1420 + Rust rebuild (first run 
 npm run tauri build         # -> src-tauri/target/release/Lwen.exe + bundle/nsis/*-setup.exe
 npm run dev                 # frontend only in a browser; every backend call fails (no Tauri IPC)
 cargo check                 # from src-tauri/, fastest way to check Rust without a webview build
+cargo test                  # from src-tauri/, the unit tests in scan.rs and store.rs
+cargo test folder_name      # one test (substring match on the test's name)
 ```
 
-There is no test runner, linter, or formatter configured. Do not add one unasked; verify changes by running the app.
+The only automated tests are those Rust unit tests — they cover `folder_name()` sanitizing and the
+scanner's caps/binary probe, and they run without a webview. There is no JS test runner, linter, or
+formatter configured. Do not add one unasked; verify frontend changes by running the app.
 
 Requires Ollama on `PATH` and at least one pulled model (`ollama pull qwen2.5-coder:7b`).
 
@@ -32,7 +36,7 @@ Consequence for frontend code: **never build a URL against `ollama_base` or a ha
 - `src/lib/ollama.js` — `/api/tags`, `/api/show`, and `streamChat` (NDJSON reader over `response.body`). Throws `OllamaError` with a `kind` (`offline` | `model` | `memory` | `http` | `network`); the UI branches on `kind`, and out-of-memory / model-not-installed messages are rewritten into actionable text here.
 - `src/lib/relevance.js` — inverted index over identifier tokens (`getUserName` also indexes `get`/`user`/`name`), IDF-weighted scoring plus boosts for literal filename mentions, definition sites, entry-point names, and shallow paths. Explicitly *not* embeddings; a semantic upgrade would be additive inside this file.
 - `src/lib/context.js` — `buildRequest()` assembles the `/api/chat` payload against the token budget in priority order: system prompt → user message → attachments → pinned files → ranked project files → history. Two invariants: history is replayed as the user's **raw** text (earlier turns' file context is never re-sent, which would compound every message), and overflow surfaces as a `warnings[]` entry shown to the user rather than a silent truncation.
-- `src/lib/tokens.js` — heuristic estimator, biased high on purpose (Ollama has no tokenizer endpoint). Under-estimating truncates conversations silently; over-estimating just wastes a little context.
+- `src/lib/tokens.js` — heuristic estimator, biased high on purpose (Ollama has no tokenizer endpoint). Under-estimating truncates conversations silently; over-estimating just wastes a little context. Estimating means walking the whole string, so the two hot paths cache instead of recomputing: `estimateFixed()` in `context.js` sums history and attachments separately from the composer text, because the composer re-costs its budget on every keystroke, and `selectContext()` memoises each file's cost onto its index entry, because the same candidates get re-costed on every message.
 
 ### State
 
@@ -53,6 +57,28 @@ Project file indexes are **not** persisted. `useProjectIndex` rebuilds them on o
 
 `src/hooks/useChat.js` owns one turn. Tokens accumulate in a ref and flush to the store on `requestAnimationFrame` — a fast local model emits far more tokens than React should re-render for. Follow that pattern for any other high-frequency stream. `useOllama` polls every 6s and compares status/loaded-model shape before calling `setState`, because a new-but-equal object would re-render the whole app on a timer.
 
+`MessageList` holds the scroll position through a turn in two stages, both in
+refs. While the answer still fits the window the question is **pinned** to the
+top and a tail spacer gives back exactly the height the text takes, so
+`scrollHeight` never moves. Once the turn outgrows the window that spacer hits
+zero, the pin is handed over to **follow**, and the view chases the tail on every
+frame. Anything that scrolls has to keep that handoff intact: `away` records
+that the reader deliberately left the tail and suppresses the handoff, and it is
+only ever set from a scroll that a real gesture (`wheel`/`touch`/`pointerdown`)
+caused within `GESTURE_MS` — our own `scrollTo` fires scroll events too, and
+treating those as the reader's would stop the view following its own stream.
+
+The thread is `memo(ChatMessage)` over `memo(Markdown)` over `memo(CodeBlock)`,
+which is what keeps a streamed reply from re-highlighting the whole conversation
+sixty times a second. That memo is only as good as the props: **every callback
+reaching a message must be identity-stable across frames.** The reducer rebuilds
+`state → projects → project → chats → chat → messages` on each patch, so any
+`useCallback` that depends on `project` or `chat` is a new function every frame
+and silently defeats the whole chain. `useChat` reads both through a `live` ref
+for exactly this reason, and `ChatView` keys `togglePin` on `project.id` plus the
+pinned array rather than the project. `FolderTree` is memoised on the same
+grounds — a project folder can be 6000 nodes sitting next to the stream.
+
 Resident-model state has two traps. Ollama loads a model on demand at the first request, so the `/api/ps` list is stale for up to a poll interval after a reply starts — `ChatView` calls `ollama.refreshLoaded()` on every `streaming` transition to close that gap. And `/api/tags` and `/api/ps` do not always spell a model the same way, so compare names through `sameModel()` in `useOllama`, never with `===`.
 
 ### Ollama lifecycle
@@ -63,7 +89,7 @@ Stopping is asymmetric and deliberate: `ollama.rs` records the child pid when Lw
 
 ### Rust modules
 
-`lib.rs` (command registration, session token, window reveal via `app_ready`, exit hook) · `ollama.rs` (status, window-less `ollama serve` spawn, spawned-pid tracking, stop, `/api/ps`, honours `OLLAMA_HOST`) · `proxy.rs` (the bridge) · `tray.rs` (the tray entry, created and torn down by `sync_tray`) · `scan.rs` (`ignore`-crate walk honouring `.gitignore` plus a build-dir denylist; 6000 files / 512 KB per file / 64 MB total caps, binary probe) · `store.rs` (per-account folders, atomic temp-file-then-rename writes, `folder_name()` sanitizes an account name to one path component and dodges Windows reserved device names).
+`lib.rs` (command registration, session token, window reveal via `app_ready`, exit hook) · `ollama.rs` (status, window-less `ollama serve` spawn, spawned-pid tracking, stop, `/api/ps`, honours `OLLAMA_HOST`) · `proxy.rs` (the bridge) · `tray.rs` (the tray entry, created and torn down by `sync_tray`) · `scan.rs` (`ignore`-crate walk honouring `.gitignore` plus a build-dir denylist; 6000 files / 512 KB per file / 64 MB total caps, binary probe) · `store.rs` (per-account folders, atomic temp-file-then-rename writes, `folder_name()` sanitizes an account name to one path component and dodges Windows reserved device names, `adopt_legacy_library` migrates a pre-accounts `library.json` into the first account's folder and renames the original rather than deleting it).
 
 New Tauri command checklist: write it in the right module, add it to `generate_handler!` in `lib.rs`, add a wrapper to `backend` in `src/lib/backend.js`. Plugin permissions go in `src-tauri/capabilities/default.json`; the CSP in `tauri.conf.json` already allows loopback `connect-src` for the bridge.
 
@@ -71,7 +97,23 @@ New Tauri command checklist: write it in the right module, add it to `generate_h
 
 `Menu` in `ui/Overlays.jsx` takes either an element (hangs under it) or a `{x, y}` point — `useContextMenu()` turns a right-click into the latter. Right-click menus are expected on every library row; wire them through `useContextMenu` rather than hand-rolling positioning. A dialog opened from inside a menu or popover is that overlay's *child*, so both close-on-outside-click handlers ignore clicks landing in a `.modal-veil`.
 
-An icon is `{ kind: 'emoji' | 'image', value }` or null, rendered by `IconGlyph` and picked by `IconPicker` (`ui/IconPicker.jsx`). Images are cropped square and shrunk to `ICON_PX` (96) before storage because they live inside `library.json`. Model icons are keyed by full model name in `prefs.modelIcons` via `useModelIcons`, deliberately not stored beside the model — Ollama owns that list.
+An icon is `{ kind: 'emoji' | 'image', value }` or null, rendered by `IconGlyph` and picked by `IconPicker` (`ui/IconPicker.jsx`). **A palette emoji that Unicode gives `Emoji_Presentation=No` must be written with a trailing U+FE0F** — that is most of the U+1F5xx block plus entries like U+1F6E0 and U+1F3D7. Without the selector Windows picks the text presentation and the glyph renders as a flat monochrome outline in a fallback font. Icons stored before this was fixed are repaired at render time by `normalizeIcon()`, and `sameEmoji()` compares ignoring the selector, so the picker still highlights the cell an older icon came from. Images are cropped square and shrunk to `ICON_PX` (96) before storage because they live inside `library.json`. Model icons are keyed by full model name in `prefs.modelIcons` via `useModelIcons`, deliberately not stored beside the model — Ollama owns that list.
+
+### Attachments (the other half of context)
+
+Project files are read in Rust; **attachments are read in the browser**. `src/lib/files.js` owns that
+path: `backend.readFileBytes()` returns raw bytes (a `tauri::ipc::Response`, not base64), and
+`extractFile()` turns them into plain text — pdfjs for `.pdf`, mammoth for `.docx`, papaparse
+rendered as an aligned Markdown table for `.csv`/`.tsv`, a null-byte probe over the first 8 KB for
+everything else. Extraction failures are thrown as finished sentences (`"… is password-protected."`,
+`"… looks like a scanned document. Lwen does not run OCR."`) and shown to the user verbatim, so keep
+new ones in that voice.
+
+The three heavy parsers are `import()`ed lazily inside their extractor and split out by
+`manualChunks` in `vite.config.js` — a chat that never attaches a PDF never pays for pdfjs. pdfjs
+also needs its worker, pulled in as `pdf.worker.min.mjs?url`, which is why `tauri.conf.json`'s CSP
+carries `worker-src 'self' blob:`. Adding a format means an extractor here plus an entry in
+`CODE_EXTS`/`SHEET_EXTS`/`DOC_EXTS` and `SUPPORTED_SUMMARY`, not a change in `context.js`.
 
 ### Slash commands
 

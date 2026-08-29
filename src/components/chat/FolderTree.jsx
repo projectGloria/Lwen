@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { Chevron, FileIcon, Folder, Pin, Refresh, Warn } from '../Icons'
 import { formatBytes } from '../../lib/format'
 
@@ -60,7 +60,7 @@ function Node({ node, depth, expanded, toggle, pinned, onTogglePin, onOpenFile, 
   )
 }
 
-export function FolderTree({
+function FolderTreeBase({
   folder,
   tree,
   stats,
@@ -156,3 +156,11 @@ export function FolderTree({
     </div>
   )
 }
+
+/**
+ * A project folder can hold thousands of nodes, and the sidebar sits next to a
+ * reply that rewrites the store on every animation frame. Every prop above is
+ * stable across those frames, so memoising here keeps the tree out of the
+ * streaming render path entirely.
+ */
+export const FolderTree = memo(FolderTreeBase)

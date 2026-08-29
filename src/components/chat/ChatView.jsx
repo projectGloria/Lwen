@@ -21,7 +21,7 @@ import { useToast } from '../../hooks/useToast'
 import { useProjectIndex } from '../../hooks/useProjectIndex'
 import { useChat } from '../../hooks/useChat'
 import { extractFile, baseName, isSupported, SUPPORTED_SUMMARY } from '../../lib/files'
-import { estimatePayload } from '../../lib/context'
+import { estimateFixed, estimatePayload } from '../../lib/context'
 import { backend } from '../../lib/backend'
 
 const DIALOG_FILTERS = [
@@ -213,16 +213,21 @@ export function ChatView() {
     }
   }
 
+  // Keyed on the id and the pinned list rather than the project object: a
+  // streaming reply replaces that object every frame, and a fresh `onTogglePin`
+  // each time would re-render the whole file tree with it.
+  const projectId = project?.id ?? null
+  const pinnedList = project?.pinned
   const togglePin = useCallback(
     (path) => {
-      if (!project) return
-      const current = project.pinned ?? []
+      if (!projectId) return
+      const current = pinnedList ?? []
       const next = current.includes(path)
         ? current.filter((p) => p !== path)
         : [...current, path]
-      dispatch({ type: 'project/update', id: project.id, patch: { pinned: next } })
+      dispatch({ type: 'project/update', id: projectId, patch: { pinned: next } })
     },
-    [project, dispatch],
+    [projectId, pinnedList, dispatch],
   )
 
   const closeFolder = useCallback(() => {
@@ -238,19 +243,29 @@ export function ChatView() {
 
   // Keyed on message *count*, not the array: a streaming reply rewrites the last
   // message on every frame, and re-costing the whole history that often is waste
-  // for what is only an estimate.
+  // for what is only an estimate. The chat id is in there too — two
+  // conversations can be the same number of messages long.
   const historyLength = chat?.messages.length ?? 0
+  const fixedCost = useMemo(
+    () =>
+      estimateFixed({
+        attachments: readyAttachments,
+        history: chat?.messages ?? [],
+        systemPrompt: project?.settings.systemPrompt ?? '',
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [attachments, historyLength, chat?.id, project?.settings.systemPrompt],
+  )
+
+  // Typing only re-costs what was typed; everything else is already summed.
   const budget = useMemo(
     () =>
       estimatePayload({
         userText: text,
-        attachments: readyAttachments,
-        history: chat?.messages ?? [],
-        systemPrompt: project?.settings.systemPrompt ?? '',
+        fixed: fixedCost,
         contextWindow: project?.settings.contextWindow ?? 8192,
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [text, attachments, historyLength, project?.settings.systemPrompt, project?.settings.contextWindow],
+    [text, fixedCost, project?.settings.contextWindow],
   )
 
   const blocked = !ollama.status.reachable
@@ -387,10 +402,12 @@ export function ChatView() {
     return () => document.removeEventListener('keydown', onKey)
   }, [project, dispatch])
 
-  if (!project || !chat) return null
+  const openFileFromChat = useCallback(
+    (f) => setViewing({ path: f.path, rel: f.rel, name: baseName(f.rel) }),
+    [],
+  )
 
-  const openFileFromChat = (f) =>
-    setViewing({ path: f.path, rel: f.rel, name: baseName(f.rel) })
+  if (!project || !chat) return null
 
   const startRename = () => {
     setRenameDraft(chat.name)
