@@ -1,4 +1,7 @@
-import { createContext, useContext, useEffect, useMemo, useReducer, useRef } from 'react'
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { getCurrentWindow } from '@tauri-apps/api/window'
+import { createWriter, flushPendingSaves, loadAccountData, persistMessages } from '../lib/persistence'
+import { useToast } from '../hooks/useToast'
 import { backend } from '../lib/backend'
 import { titleFromText } from '../lib/format'
 
@@ -338,9 +341,6 @@ function isDefaultName(name) {
   return name === 'New conversation' || name === 'First conversation'
 }
 
-const settledMessages = (messages) =>
-  messages.filter((m) => !m.streaming).map(({ pending, streaming, ...rest }) => rest)
-
 /** Drops transient per-render fields before writing to disk. */
 function serialize(state) {
   return JSON.stringify({
@@ -351,7 +351,7 @@ function serialize(state) {
     prefs: state.prefs,
     projects: state.projects.map((p) => ({
       ...p,
-      chats: p.chats.map((c) => ({ ...c, messages: settledMessages(c.messages) })),
+      chats: p.chats.map((c) => ({ ...c, messages: persistMessages(c.messages) })),
     })),
   })
 }
@@ -406,83 +406,71 @@ const StoreContext = createContext(null)
  */
 export function StoreProvider({ user, children }) {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const timer = useRef(null)
-  const trashTimer = useRef(null)
-  const lastWrite = useRef('')
-  const lastTrashWrite = useRef('')
-  // Saves are keyed to the account that produced them, so a write scheduled
-  // just before a switch cannot land in the next account's folder.
-  const owner = useRef(user)
+  const writers = useRef(null)
+  const [loadError, setLoadError] = useState(null)
+  const [attempt, setAttempt] = useState(0)
+  const { toast } = useToast()
 
   useEffect(() => {
     let cancelled = false
-    owner.current = user
-    lastWrite.current = ''
-    lastTrashWrite.current = ''
-    clearTimeout(timer.current)
-    clearTimeout(trashTimer.current)
+    setLoadError(null)
     dispatch({ type: 'reset' })
+    const onError = (e) => toast(`Could not save your library: ${e?.message || e}`, { tone: 'error' })
+    const library = createWriter({ user, save: backend.saveLibrary, serialize, onError })
+    const trash = createWriter({ user, save: backend.saveTrash, serialize: serializeTrash, delay: 500, onError })
+    writers.current = { user, library, trash }
 
-    if (!user) return () => {}
-
-    Promise.all([
-      backend.loadLibrary(user).catch(() => null),
-      backend.loadTrash(user).catch(() => null),
-    ])
-      .then(([libraryJson, trashJson]) => {
-        if (cancelled) return
-        let payload = null
-        try {
-          payload = libraryJson ? migrate(JSON.parse(libraryJson)) : null
-        } catch {
-          // A corrupt library should not stop the app from opening.
-        }
-        let trash = []
-        try {
-          trash = trashJson ? migrateTrash(JSON.parse(trashJson)) : []
-        } catch {
-          /* same for the trash file */
-        }
-        dispatch(
-          payload || trash.length
-            ? { type: 'hydrate', payload: { ...(payload || {}), trash } }
-            : { type: 'ready' },
-        )
-      })
-      .catch(() => !cancelled && dispatch({ type: 'ready' }))
-
+    async function load() {
+      const { library: rawLibrary, trash: rawTrash } = await loadAccountData(backend, user)
+      const payload = rawLibrary ? migrate(rawLibrary) : null
+      if (!cancelled) dispatch({ type: 'hydrate', payload: { ...(payload || {}), trash: migrateTrash(rawTrash) } })
+    }
+    if (user) load().catch((e) => {
+      if (!cancelled) setLoadError(e?.message || String(e))
+    })
     return () => {
       cancelled = true
+      writers.current = null
+      void library.dispose()
+      void trash.dispose()
     }
-  }, [user])
+  }, [user, attempt, toast])
 
-  useEffect(() => {
-    if (!state.loaded || !user || owner.current !== user) return
-    clearTimeout(timer.current)
-    timer.current = setTimeout(() => {
-      const json = serialize(state)
-      if (json === lastWrite.current) return
-      lastWrite.current = json
-      backend.saveLibrary(user, json).catch(() => {})
-    }, 700)
-    return () => clearTimeout(timer.current)
+  useLayoutEffect(() => {
+    const current = writers.current
+    if (!state.loaded || !current || current.user !== user) return
+    current.library.update(state)
+    current.trash.update(state.trash)
   }, [state, user])
 
-  // The trash changes rarely; keeping it in its own file means a deletion is
-  // still there after a crash mid-write of the much larger library.
   useEffect(() => {
-    if (!state.loaded || !user || owner.current !== user) return
-    clearTimeout(trashTimer.current)
-    trashTimer.current = setTimeout(() => {
-      const json = serializeTrash(state.trash)
-      if (json === lastTrashWrite.current) return
-      lastTrashWrite.current = json
-      backend.saveTrash(user, json).catch(() => {})
-    }, 500)
-    return () => clearTimeout(trashTimer.current)
-  }, [state.trash, state.loaded, user])
+    let active = true
+    let unlisten
+    let closing = false
+    const win = getCurrentWindow()
+    win.onCloseRequested(async (event) => {
+      if (closing) return
+      event.preventDefault()
+      try {
+        await flushPendingSaves(user)
+        closing = true
+        await win.close()
+      } catch (e) {
+        closing = false
+        toast(`Could not save before closing: ${e?.message || e}`, { tone: 'error' })
+      }
+    }).then((fn) => { if (active) unlisten = fn; else fn() }).catch(() => {})
+    return () => { active = false; unlisten?.() }
+  }, [user, toast])
 
   const value = useMemo(() => ({ state, dispatch }), [state])
+  if (loadError) return (
+    <div className="crash">
+      <h1>Your library could not be opened.</h1>
+      <p>{loadError}</p>
+      <button className="btn-primary" onClick={() => setAttempt((n) => n + 1)}>Retry</button>
+    </div>
+  )
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }
 

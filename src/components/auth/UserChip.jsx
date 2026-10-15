@@ -135,7 +135,7 @@ export function UserChip({ variant = 'row' }) {
       <button
         onClick={() => {
           setMenuAt(null)
-          signOut()
+          signOut().catch((e) => error(e?.message || 'Could not save before switching users.'))
         }}
       >
         <Users size={13} /> Switch user{users.length > 1 ? ` (${users.length})` : ''}
@@ -144,7 +144,8 @@ export function UserChip({ variant = 'row' }) {
         onClick={() => {
           setMenuAt(null)
           signOut({ forget: true })
-          toast('Signed out')
+            .then(() => toast('Signed out'))
+            .catch((e) => error(e?.message || 'Could not save before signing out.'))
         }}
       >
         <SignOut size={13} /> Sign out

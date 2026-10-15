@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { requireProjectIndex, retainAttachments, retryAttachments } from '../lib/chatContext'
+import { useToast } from './useToast'
 import { streamChat, tokensPerSecond, OllamaError } from '../lib/ollama'
 import { buildRequest } from '../lib/context'
 import { uid } from '../state/store'
@@ -13,6 +15,7 @@ import { useStats } from '../state/stats'
 export function useChat({ project, chat, index, pinnedPaths, dispatch }) {
   const [streaming, setStreaming] = useState(false)
   const { bump } = useStats()
+  const { toast } = useToast()
   const abortRef = useRef(null)
   const bufferRef = useRef({ content: '', thinking: '' })
   const frameRef = useRef(0)
@@ -176,7 +179,11 @@ export function useChat({ project, chat, index, pinnedPaths, dispatch }) {
   const send = useCallback(
     async ({ text, attachments = [] }) => {
       const { project, chat, streaming } = live.current
-      if (!project || !chat || streaming) return
+      if (!project || !chat || streaming || abortRef.current) return
+      try { requireProjectIndex(project, live.current.index) } catch (e) {
+        toast(e.message, { tone: 'error' })
+        return false
+      }
       const userText = text.trim()
       if (!userText) return
 
@@ -193,7 +200,7 @@ export function useChat({ project, chat, index, pinnedPaths, dispatch }) {
           role: 'user',
           content: userText,
           ts: Date.now(),
-          attachments: attachments.map((a) => ({ name: a.name, kind: a.kind, bytes: a.bytes })),
+          attachments: retainAttachments(attachments),
         },
       })
       bump('asks')
@@ -207,18 +214,27 @@ export function useChat({ project, chat, index, pinnedPaths, dispatch }) {
         settings: project.settings,
       })
     },
-    [dispatch, run, bump],
+    [dispatch, run, bump, toast],
   )
 
   /** Re-runs the turn that produced `assistantId`, replacing its reply. */
   const regenerate = useCallback(
     async (assistantId) => {
       const { project, chat, streaming } = live.current
-      if (!project || !chat || streaming) return
+      if (!project || !chat || streaming || abortRef.current) return
+      try { requireProjectIndex(project, live.current.index) } catch (e) {
+        toast(e.message, { tone: 'error' })
+        return false
+      }
       const i = chat.messages.findIndex((m) => m.id === assistantId)
       if (i < 1) return
       const priorUser = [...chat.messages.slice(0, i)].reverse().find((m) => m.role === 'user')
       if (!priorUser) return
+      let attachments
+      try { attachments = retryAttachments(priorUser) } catch (e) {
+        toast(e.message, { tone: 'error' })
+        return false
+      }
 
       dispatch({
         type: 'message/truncateFrom',
@@ -234,15 +250,14 @@ export function useChat({ project, chat, index, pinnedPaths, dispatch }) {
 
       await run({
         userText: priorUser.content,
-        // The original attachment text is not retained after a turn completes.
-        attachments: [],
+        attachments,
         history,
         projectId: project.id,
         chatId: chat.id,
         settings: project.settings,
       })
     },
-    [dispatch, run],
+    [dispatch, run, toast],
   )
 
   const stop = useCallback(() => abortRef.current?.abort(), [])

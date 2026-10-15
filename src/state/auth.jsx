@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { flushPendingSaves } from '../lib/persistence'
 import { backend } from '../lib/backend'
 import { hashPasscode, verifyPasscode } from '../lib/accounts'
 import { uid } from './store'
@@ -105,10 +106,11 @@ export function AuthProvider({ children }) {
    * account was last used, so the picker does not preselect it; switching
    * keeps it, because you are likely coming straight back.
    */
-  const signOut = useCallback(({ forget = false } = {}) => {
+  const signOut = useCallback(async ({ forget = false } = {}) => {
+    await flushPendingSaves(user?.name)
     if (forget) localStorage.removeItem(LAST_USER_KEY)
     setUser(null)
-  }, [])
+  }, [user?.name])
 
   const updateProfile = useCallback(
     async (patch) => {

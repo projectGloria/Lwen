@@ -72,6 +72,13 @@ To produce an MSI as well, add `"msi"` to `bundle.targets` in
 
 ---
 
+## Validation
+
+Run `npm test` for regression checks covering persistence, project indexing,
+worker cancellation, and attachment retries. Run `npm run build` to check the
+production frontend, including its indexing worker. Desktop smoke tests require
+`src-tauri/`, which is not included in this checkout.
+
 ## How it works
 
 ### The Ollama bridge
@@ -164,6 +171,10 @@ Code and config files, `.txt`, `.md`, `.json`, `.csv`/`.tsv`, `.pdf`, `.docx`.
 PDFs are plain text extraction only. A scanned PDF has no text layer, and Lwen
 does not run OCR — it will say so rather than attaching an empty file.
 
+Attachment text is saved with its message so **Regenerate** can reuse the
+original files. Older messages that saved only attachment names require you to
+reattach the files in a new message; their existing replies are kept.
+
 ### Projects and conversations
 
 A project groups conversations, a codebase folder, an icon and its model
@@ -244,7 +255,8 @@ minute.
 conversation or a project moves it to `trash.json`, where **Recently deleted**
 offers it back until you empty it or 30 days pass.
 
-Writes are debounced and atomic. Project file indexes are **not** persisted —
+Library writes checkpoint continuous edits and flush before switching accounts or
+closing the window. Failed reads stop loading without overwriting saved data. Project file indexes are **not** persisted —
 they are rebuilt when you open a project, which also picks up any edits made
 outside Lwen. An install that predates accounts hands its old
 `library.json` to the first account created, keeping the original as

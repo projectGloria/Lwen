@@ -6,6 +6,7 @@
   "description": "A local-first desktop client for Ollama.",
   "scripts": {
     "dev": "vite",
+    "test": "node --test tests/*.test.js",
     "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri"

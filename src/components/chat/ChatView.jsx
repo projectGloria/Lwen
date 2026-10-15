@@ -66,7 +66,7 @@ export function ChatView() {
   const renameRef = useRef(null)
   const [renameDraft, setRenameDraft] = useState('')
 
-  const folderIndex = useProjectIndex(project?.folder)
+  const folderIndex = useProjectIndex(project?.folder, project?.id)
   const pinned = useMemo(() => new Set(project?.pinned ?? []), [project?.pinned])
 
   const { send, stop, regenerate, streaming } = useChat({
@@ -268,13 +268,18 @@ export function ChatView() {
     [text, fixedCost, project?.settings.contextWindow],
   )
 
-  const blocked = !ollama.status.reachable
-    ? 'Ollama is not running. Start it from the model pill in the top bar.'
-    : !project?.settings.model
-      ? 'No model is installed. Pull one with `ollama pull qwen2.5-coder:7b`, then refresh.'
-      : ''
+  const blocked = folderIndex.scanning
+    ? 'Reading project files. You can send when indexing finishes.'
+    : folderIndex.error
+      ? 'Project files could not be read. Rescan or close the folder to continue.'
+      : !ollama.status.reachable
+        ? 'Ollama is not running. Start it from the model pill in the top bar.'
+        : !project?.settings.model
+          ? 'No model is installed. Pull one with `ollama pull qwen2.5-coder:7b`, then refresh.'
+          : ''
 
   const doSend = async () => {
+    if (blocked || streaming) return
     const body = text
     setText('')
     setAttachments([])
