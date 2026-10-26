@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="380" viewBox="0 0 900 380" fill="none" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="boxBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#21201D" />
+      <stop offset="100%" stop-color="#181715" />
+    </linearGradient>
+
+    <linearGradient id="accentBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EAA684" />
+      <stop offset="100%" stop-color="#D97757" />
+    </linearGradient>
+  </defs>
+
+  <!-- Container Base -->
+  <rect x="10" y="10" width="880" height="360" rx="14" fill="#141311" stroke="#2B2925" stroke-width="1.5" />
+
+  <!-- Diagram Title -->
+  <text x="36" y="44" fill="#EAE6DF" font-size="16" font-weight="700">Lwen System Architecture &amp; Zero-Leak Loopback Pipeline</text>
+  <text x="36" y="64" fill="#888275" font-size="12">How Tauri 2, the Rust security bridge, and React 19 deliver local LLM execution with zero telemetry.</text>
+
+  <!-- ================= BOX 1: REACT 19 FRONTEND ================= -->
+  <rect x="36" y="90" width="240" height="250" rx="10" fill="url(#boxBg)" stroke="#38352F" stroke-width="1.5" />
+  <rect x="36" y="90" width="240" height="36" rx="10" fill="#292723" />
+  <rect x="36" y="116" width="240" height="10" fill="#292723" />
+  <circle cx="56" cy="108" r="4" fill="#61DAFB" />
+  <text x="68" y="112" fill="#EAE6DF" font-size="13" font-weight="700">React 19 Frontend</text>
+
+  <!-- Items inside React -->
+  <g transform="translate(50, 142)">
+    <rect x="0" y="0" width="212" height="30" rx="6" fill="#1A1917" stroke="#2F2D28" stroke-width="1" />
+    <text x="10" y="19" fill="#DCD7CD" font-size="11.5" font-weight="500">🎨 Responsive Chat &amp; Projects</text>
+
+    <rect x="0" y="40" width="212" height="30" rx="6" fill="#1A1917" stroke="#2F2D28" stroke-width="1" />
+    <text x="10" y="59" fill="#DCD7CD" font-size="11.5" font-weight="500">⚡ Inverted Index WebWorker</text>
+
+    <rect x="0" y="80" width="212" height="30" rx="6" fill="#1A1917" stroke="#2F2D28" stroke-width="1" />
+    <text x="10" y="99" fill="#DCD7CD" font-size="11.5" font-weight="500">📊 Context Budget Predictor</text>
+
+    <rect x="0" y="120" width="212" height="30" rx="6" fill="#1A1917" stroke="#2F2D28" stroke-width="1" />
+    <text x="10" y="139" fill="#DCD7CD" font-size="11.5" font-weight="500">📄 PDF / DOCX Parser (mammoth)</text>
+
+    <rect x="0" y="160" width="212" height="26" rx="5" fill="#D97757" fill-opacity="0.12" />
+    <text x="10" y="177" fill="#E29A76" font-size="11" font-weight="600">ReadableStream Token Consumer</text>
+  </g>
+
+  <!-- ================= ARROW 1: Frontend -> Rust ================= -->
+  <g stroke="#D97757" stroke-width="1.8" fill="none">
+    <line x1="276" y1="180" x2="330" y2="180" stroke-dasharray="3 3" />
+    <polygon points="330,176 338,180 330,184" fill="#D97757" />
+  </g>
+  <text x="282" y="172" fill="#A8A194" font-size="10">Tauri IPC</text>
+
+  <!-- ================= BOX 2: TAURI 2 / RUST CORE ================= -->
+  <rect x="340" y="90" width="250" height="250" rx="10" fill="url(#boxBg)" stroke="url(#accentBorder)" stroke-width="1.5" />
+  <rect x="340" y="90" width="250" height="36" rx="10" fill="#2D2823" />
+  <rect x="340" y="116" width="250" height="10" fill="#2D2823" />
+  <circle cx="360" cy="108" r="4" fill="#E29A76" />
+  <text x="372" y="112" fill="#EAE6DF" font-size="13" font-weight="700">Tauri 2 (Rust Core)</text>
+
+  <!-- Items inside Rust Core -->
+  <g transform="translate(354, 142)">
+    <rect x="0" y="0" width="222" height="34" rx="6" fill="#1F1D1A" stroke="#3D372E" stroke-width="1" />
+    <text x="10" y="16" fill="#EAA684" font-size="11.5" font-weight="700">CORS Loopback Forwarder</text>
+    <text x="10" y="28" fill="#888276" font-size="9.5">127.0.0.1 (Secret Auth Token)</text>
+
+    <rect x="0" y="44" width="222" height="30" rx="6" fill="#1A1917" stroke="#2F2D28" stroke-width="1" />
+    <text x="10" y="63" fill="#DCD7CD" font-size="11.5" font-weight="500">🛡️ Process Owner &amp; Cleaner</text>
+
+    <rect x="0" y="84" width="222" height="30" rx="6" fill="#1A1917" stroke="#2F2D28" stroke-width="1" />
+    <text x="10" y="103" fill="#DCD7CD" font-size="11.5" font-weight="500">📁 Native Async FS Scanner</text>
+
+    <rect x="0" y="124" width="222" height="30" rx="6" fill="#1A1917" stroke="#2F2D28" stroke-width="1" />
+    <text x="10" y="143" fill="#DCD7CD" font-size="11.5" font-weight="500">🔔 System Tray Controller</text>
+
+    <rect x="0" y="164" width="222" height="22" rx="4" fill="#24221E" />
+    <text x="10" y="179" fill="#A19A8D" font-size="10">Zero Browser Bundling · Tens of MB RAM</text>
+  </g>
+
+  <!-- ================= ARROW 2: Rust -> Ollama ================= -->
+  <g stroke="#7FA87F" stroke-width="1.8" fill="none">
+    <line x1="590" y1="160" x2="644" y2="160" />
+    <polygon points="644,156 652,160 644,164" fill="#7FA87F" />
+  </g>
+  <text x="596" y="152" fill="#7FA87F" font-size="10">HTTP Stream</text>
+
+  <!-- ================= ARROW 3: Rust -> Local Storage ================= -->
+  <g stroke="#A8A194" stroke-width="1.8" fill="none">
+    <line x1="590" y1="270" x2="644" y2="270" stroke-dasharray="3 3" />
+    <polygon points="644,266 652,270 644,274" fill="#A8A194" />
+  </g>
+  <text x="596" y="262" fill="#A8A194" font-size="10">Local IO</text>
+
+  <!-- ================= BOX 3A: LOCAL OLLAMA SERVER ================= -->
+  <rect x="654" y="90" width="210" height="120" rx="10" fill="url(#boxBg)" stroke="#38352F" stroke-width="1.5" />
+  <rect x="654" y="90" width="210" height="32" rx="10" fill="#202A20" />
+  <rect x="654" y="112" width="210" height="10" fill="#202A20" />
+  <circle cx="672" cy="106" r="4" fill="#7FA87F" />
+  <text x="684" y="110" fill="#EAE6DF" font-size="12" font-weight="700">Ollama Local Engine</text>
+
+  <g transform="translate(668, 134)">
+    <text x="0" y="14" fill="#FAF5EE" font-size="11" font-weight="600">127.0.0.1:11434</text>
+    <text x="0" y="32" fill="#999285" font-size="10.5">qwen2.5-coder · llama3.2 · mistral</text>
+    <text x="0" y="50" fill="#7FA87F" font-size="10">● No console popups, pure local GPU/CPU</text>
+  </g>
+
+  <!-- ================= BOX 3B: ISOLATED LOCAL STORAGE ================= -->
+  <rect x="654" y="222" width="210" height="118" rx="10" fill="url(#boxBg)" stroke="#38352F" stroke-width="1.5" />
+  <rect x="654" y="222" width="210" height="32" rx="10" fill="#292723" />
+  <rect x="654" y="244" width="210" height="10" fill="#292723" />
+  <circle cx="672" cy="238" r="4" fill="#B3ACA0" />
+  <text x="684" y="242" fill="#EAE6DF" font-size="12" font-weight="700">Local Disk Storage</text>
+
+  <g transform="translate(668, 264)">
+    <text x="0" y="14" fill="#FAF5EE" font-size="11" font-weight="600">%APPDATA%/com.lwen.desktop</text>
+    <text x="0" y="32" fill="#999285" font-size="10.5">users.json · library.json · stats.json</text>
+    <text x="0" y="48" fill="#D97757" font-size="10">● PBKDF2 hash · 30-day trash · 0 cloud</text>
+  </g>
+</svg>

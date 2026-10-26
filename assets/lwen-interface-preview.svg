@@ -1,0 +1,218 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" fill="none" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <!-- Window Drop Shadow -->
+    <filter id="winShadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#000000" flood-opacity="0.65" />
+    </filter>
+
+    <!-- Linear Gradients -->
+    <linearGradient id="winBg" x1="0" y1="0" x2="0" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E1D1A" />
+      <stop offset="100%" stop-color="#141412" />
+    </linearGradient>
+
+    <linearGradient id="accentBtnGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#EAA684" />
+      <stop offset="100%" stop-color="#D97757" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background App Window Frame -->
+  <g filter="url(#winShadow)">
+    <rect x="20" y="20" width="920" height="520" rx="14" fill="url(#winBg)" stroke="#2E2C27" stroke-width="1.5" />
+  </g>
+
+  <!-- ================= TOP TITLEBAR ================= -->
+  <rect x="20" y="20" width="920" height="46" rx="14" fill="#181816" />
+  <rect x="20" y="52" width="920" height="14" fill="#181816" />
+  <line x1="20" y1="66" x2="940" y2="66" stroke="#282622" stroke-width="1" />
+
+  <!-- Window Controls (Mac/Unix dots on left, Windows style subtle) -->
+  <circle cx="44" cy="43" r="6" fill="#423E37" />
+  <circle cx="64" cy="43" r="6" fill="#423E37" />
+  <circle cx="84" cy="43" r="6" fill="#423E37" />
+
+  <!-- Brand Mark & App Name -->
+  <g transform="translate(108, 33)">
+    <!-- Small 8 spoke icon -->
+    <g stroke="#D97757" stroke-width="2" stroke-linecap="round">
+      <line x1="10" y1="2" x2="10" y2="6" />
+      <line x1="10" y1="14" x2="10" y2="18" />
+      <line x1="2" y1="10" x2="6" y2="10" />
+      <line x1="14" y1="10" x2="18" y2="10" />
+      <line x1="4.5" y1="4.5" x2="7.5" y2="7.5" />
+      <line x1="12.5" y1="12.5" x2="15.5" y2="15.5" />
+      <line x1="15.5" y1="4.5" x2="12.5" y2="7.5" />
+      <line x1="7.5" y1="12.5" x2="4.5" y2="15.5" />
+    </g>
+    <text x="26" y="15" fill="#EAE6DF" font-size="14" font-weight="700" letter-spacing="0.5">Lwen</text>
+  </g>
+
+  <!-- Breadcrumb -->
+  <text x="180" y="47" fill="#6E695F" font-size="12">Projects</text>
+  <text x="232" y="47" fill="#8E887E" font-size="12">/</text>
+  <text x="246" y="47" fill="#D4CEBF" font-weight="600" font-size="12">Gloria Repoz</text>
+  <text x="325" y="47" fill="#8E887E" font-size="12">/</text>
+  <text x="339" y="47" fill="#D97757" font-weight="600" font-size="12">Lwen</text>
+
+  <!-- Right Titlebar Status Badges -->
+  <!-- Ollama Pill -->
+  <rect x="620" y="32" width="168" height="24" rx="12" fill="#24221E" stroke="#3A3730" stroke-width="1" />
+  <circle cx="632" cy="44" r="3.5" fill="#7FA87F" />
+  <text x="642" y="48" fill="#DCD7CD" font-size="11" font-weight="500">qwen2.5-coder:7b</text>
+  <rect x="746" y="36" width="34" height="16" rx="8" fill="#7FA87F" fill-opacity="0.15" />
+  <text x="752" y="48" fill="#7FA87F" font-size="9.5" font-weight="700">LIVE</text>
+
+  <!-- User Avatar & Session Meter -->
+  <rect x="800" y="32" width="124" height="24" rx="12" fill="#24221E" stroke="#3A3730" stroke-width="1" />
+  <circle cx="814" cy="44" r="7" fill="#D97757" />
+  <text x="811" y="47" fill="#141412" font-size="9" font-weight="bold">N</text>
+  <text x="828" y="48" fill="#DCD7CD" font-size="11" font-weight="500">Nihil</text>
+  <text x="868" y="48" fill="#7A756B" font-size="11">42m</text>
+
+  <!-- ================= SIDEBAR ================= -->
+  <rect x="20" y="66" width="240" height="474" fill="#171614" />
+  <line x1="260" y1="66" x2="260" y2="540" stroke="#282622" stroke-width="1" />
+
+  <!-- New Chat Button -->
+  <rect x="36" y="82" width="208" height="32" rx="8" fill="#22201C" stroke="#33312B" stroke-width="1" />
+  <text x="96" y="103" fill="#D97757" font-size="12" font-weight="600">+ New Chat</text>
+
+  <!-- Projects / Conversations Header -->
+  <text x="36" y="142" fill="#7A756B" font-size="10.5" font-weight="700" letter-spacing="0.8">PROJECT WORKSPACE</text>
+
+  <!-- Active Project Item -->
+  <rect x="34" y="152" width="212" height="32" rx="7" fill="#2A2723" />
+  <circle cx="50" cy="168" r="5" fill="#D97757" />
+  <text x="64" y="172" fill="#FAF7F2" font-size="12" font-weight="600">Lwen Client</text>
+  <rect x="210" y="160" width="26" height="16" rx="4" fill="#3D3830" />
+  <text x="216" y="172" fill="#B3ACA0" font-size="10">14</text>
+
+  <!-- Conversations List -->
+  <g transform="translate(42, 198)">
+    <!-- Active Chat -->
+    <rect x="-8" y="0" width="212" height="28" rx="6" fill="#D97757" fill-opacity="0.14" stroke="#D97757" stroke-opacity="0.3" stroke-width="1" />
+    <path d="M4 6 H14 V14 H6 L4 16 Z" fill="none" stroke="#D97757" stroke-width="1.4" stroke-linejoin="round" />
+    <text x="22" y="16" fill="#FAF5EE" font-size="11.5" font-weight="600">Relevance Indexing</text>
+
+    <!-- Other Chats -->
+    <text x="22" y="44" fill="#A39C90" font-size="11.5">Context Window Budget</text>
+    <text x="22" y="72" fill="#A39C90" font-size="11.5">Tauri 2 Loopback Bridge</text>
+    <text x="22" y="100" fill="#A39C90" font-size="11.5">Multi-User Account Store</text>
+  </g>
+
+  <!-- Codebase Index Section -->
+  <line x1="36" y1="328" x2="244" y2="328" stroke="#252420" stroke-width="1" />
+  <text x="36" y="352" fill="#7A756B" font-size="10.5" font-weight="700" letter-spacing="0.8">PINNED &amp; INDEXED FILES</text>
+
+  <!-- File Tree Items -->
+  <g transform="translate(40, 368)">
+    <!-- Pinned File 1 -->
+    <circle cx="6" cy="7" r="2.5" fill="#D97757" />
+    <text x="18" y="11" fill="#FAF5EE" font-size="11" font-weight="500">relevance.js</text>
+    <rect x="156" y="1" width="38" height="15" rx="4" fill="#D97757" fill-opacity="0.2" />
+    <text x="160" y="12" fill="#EAA684" font-size="9" font-weight="600">PINNED</text>
+
+    <!-- File 2 -->
+    <circle cx="6" cy="31" r="2.5" fill="#6A655C" />
+    <text x="18" y="35" fill="#B3ACA0" font-size="11">context.js</text>
+    <text x="162" y="35" fill="#6A655C" font-size="9.5">IDF 0.94</text>
+
+    <!-- File 3 -->
+    <circle cx="6" cy="55" r="2.5" fill="#6A655C" />
+    <text x="18" y="59" fill="#B3ACA0" font-size="11">backend.js</text>
+    <text x="162" y="59" fill="#6A655C" font-size="9.5">IDF 0.81</text>
+
+    <!-- File 4 -->
+    <circle cx="6" cy="79" r="2.5" fill="#6A655C" />
+    <text x="18" y="83" fill="#B3ACA0" font-size="11">ollama.js</text>
+    <text x="162" y="83" fill="#6A655C" font-size="9.5">IDF 0.76</text>
+  </g>
+
+  <!-- Sidebar Footer: Disk usage & telemetry status -->
+  <rect x="20" y="495" width="240" height="45" fill="#141311" />
+  <line x1="20" y1="495" x2="260" y2="495" stroke="#252420" stroke-width="1" />
+  <text x="36" y="516" fill="#8A8478" font-size="10.5">Local Storage: 12.4 MB</text>
+  <text x="36" y="530" fill="#7FA87F" font-size="10">● Telemetry: 100% Offline</text>
+
+  <!-- ================= MAIN CHAT AREA ================= -->
+  <!-- Context Budget Meter Pill -->
+  <g transform="translate(280, 80)">
+    <rect x="0" y="0" width="640" height="28" rx="8" fill="#1C1B18" stroke="#2D2B26" stroke-width="1" />
+    <text x="14" y="18" fill="#B5AEA1" font-size="11">Active Context Budget: <tspan fill="#D97757" font-weight="600">4,820 / 16,384 tokens</tspan> (29% utilized)</text>
+    <rect x="440" y="8" width="180" height="12" rx="6" fill="#2A2722" />
+    <rect x="440" y="8" width="52" height="12" rx="6" fill="url(#accentBtnGrad)" />
+  </g>
+
+  <!-- Turn 1: User Message -->
+  <g transform="translate(280, 124)">
+    <circle cx="16" cy="16" r="14" fill="#2E2C26" />
+    <text x="11" y="21" fill="#EAE6DF" font-size="12" font-weight="bold">U</text>
+    <rect x="42" y="0" width="598" height="52" rx="10" fill="#22201C" stroke="#2F2D27" stroke-width="1" />
+    <text x="56" y="22" fill="#FAF5EE" font-size="12.5" font-weight="500">How does Lwen rank codebase files before sending context to the local Ollama model?</text>
+    <!-- Attached badge -->
+    <rect x="56" y="29" width="176" height="17" rx="4" fill="#161513" />
+    <text x="62" y="41" fill="#A8A194" font-size="10">📎 Attached: <tspan fill="#E29A76">relevance.js</tspan> (+1 file)</text>
+  </g>
+
+  <!-- Turn 2: Assistant Message -->
+  <g transform="translate(280, 192)">
+    <!-- Assistant Avatar (Lwen mark) -->
+    <circle cx="16" cy="16" r="14" fill="#D97757" fill-opacity="0.16" stroke="#D97757" stroke-opacity="0.4" stroke-width="1" />
+    <g transform="translate(7, 7) scale(0.75)" stroke="#D97757" stroke-width="2.5" stroke-linecap="round">
+      <line x1="12" y1="2.5" x2="12" y2="7.2" />
+      <line x1="12" y1="16.8" x2="12" y2="21.5" />
+      <line x1="2.5" y1="12" x2="7.2" y2="12" />
+      <line x1="16.8" y1="12" x2="21.5" y2="12" />
+      <line x1="5.4" y1="5.4" x2="8.7" y2="8.7" />
+      <line x1="15.3" y1="15.3" x2="18.6" y2="18.6" />
+    </g>
+
+    <!-- Assistant Response Card -->
+    <rect x="42" y="0" width="598" height="236" rx="10" fill="#1A1916" stroke="#2B2924" stroke-width="1" />
+    <text x="56" y="24" fill="#EAE6DF" font-size="12.5" line-height="1.5">
+      Lwen uses a lightweight, zero-embeddings <tspan fill="#E29A76" font-weight="600">inverted index</tspan> that scores project files by IDF-weighted
+    </text>
+    <text x="56" y="42" fill="#EAE6DF" font-size="12.5">
+      term frequency with specialized heuristics:
+    </text>
+
+    <!-- Bullet points -->
+    <text x="64" y="66" fill="#B3ACA0" font-size="12">• <tspan fill="#FAF5EE" font-weight="600">Pinned Files First:</tspan> Files pinned in the tree are packed unconditionally.</text>
+    <text x="64" y="86" fill="#B3ACA0" font-size="12">• <tspan fill="#FAF5EE" font-weight="600">Literal Filename Match:</tspan> Large score boost if your prompt explicitly names the file.</text>
+    <text x="64" y="106" fill="#B3ACA0" font-size="12">• <tspan fill="#FAF5EE" font-weight="600">Definition Site Boost:</tspan> Boosts matches found at <tspan fill="#D97757">function</tspan>, <tspan fill="#D97757">class</tspan>, or <tspan fill="#D97757">def</tspan> sites.</text>
+
+    <!-- Code Block -->
+    <rect x="56" y="122" width="570" height="98" rx="6" fill="#121210" stroke="#262520" stroke-width="1" />
+    <rect x="56" y="122" width="570" height="22" rx="6" fill="#171614" />
+    <text x="68" y="137" fill="#757065" font-size="10.5" font-family="monospace">src/lib/relevance.js</text>
+
+    <text x="68" y="162" fill="#D97757" font-size="11" font-family="monospace">const</text>
+    <text x="108" y="162" fill="#EAE6DF" font-size="11" font-family="monospace">score = tf * idf *</text>
+    <text x="238" y="162" fill="#88C0D0" font-size="11" font-family="monospace">(isDefinition ? 2.5 : 1.0)</text>
+    <text x="68" y="182" fill="#D97757" font-size="11" font-family="monospace">if</text>
+    <text x="86" y="182" fill="#EAE6DF" font-size="11" font-family="monospace">(explicitlyNamed(file, query)) score +=</text>
+    <text x="352" y="182" fill="#B48EAD" font-size="11" font-family="monospace">15.0;</text>
+    <text x="68" y="202" fill="#6E6A60" font-size="11" font-family="monospace">// Tokens packed until budget limit without dropping prompt context</text>
+  </g>
+
+  <!-- ================= COMPOSER (BOTTOM BAR) ================= -->
+  <g transform="translate(280, 442)">
+    <rect x="0" y="0" width="640" height="74" rx="10" fill="#1C1B18" stroke="#33312A" stroke-width="1.2" />
+    <text x="18" y="28" fill="#757065" font-size="12.5">Ask questions about your code, attach files, or type / for commands...</text>
+
+    <!-- Bottom Composer Tools -->
+    <rect x="16" y="44" width="70" height="22" rx="5" fill="#252420" stroke="#38362F" stroke-width="1" />
+    <text x="24" y="59" fill="#A8A296" font-size="10.5">📎 Attach</text>
+
+    <rect x="94" y="44" width="78" height="22" rx="5" fill="#252420" stroke="#38362F" stroke-width="1" />
+    <text x="102" y="59" fill="#A8A296" font-size="10.5">⚡ /commands</text>
+
+    <rect x="180" y="44" width="100" height="22" rx="5" fill="#252420" stroke="#38362F" stroke-width="1" />
+    <text x="188" y="59" fill="#A8A296" font-size="10.5">⚙️ Model Settings</text>
+
+    <!-- Send Button -->
+    <rect x="574" y="42" width="54" height="25" rx="6" fill="url(#accentBtnGrad)" />
+    <text x="587" y="59" fill="#151412" font-size="11" font-weight="700">Send</text>
+  </g>
+</svg>

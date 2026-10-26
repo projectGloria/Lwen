@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320" fill="none" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <!-- Background Card -->
+  <rect x="10" y="10" width="780" height="300" rx="12" fill="#181715" stroke="#2B2925" stroke-width="1.5" />
+
+  <!-- Title -->
+  <text x="32" y="44" fill="#FAF5EE" font-size="15" font-weight="700">Codebase Relevance Ranking &amp; Context Budget Packing</text>
+  <text x="32" y="64" fill="#8C8679" font-size="11.5">Deterministic keyword scoring without vector databases or embedding latency</text>
+
+  <!-- Left: Scoring Pipeline -->
+  <g transform="translate(32, 90)">
+    <!-- Stage 1 -->
+    <rect x="0" y="0" width="340" height="42" rx="8" fill="#22201C" stroke="#36332C" stroke-width="1" />
+    <circle cx="22" cy="21" r="10" fill="#D97757" fill-opacity="0.2" />
+    <text x="18" y="25" fill="#E29A76" font-size="11" font-weight="bold">1</text>
+    <text x="42" y="18" fill="#EAE6DF" font-size="11.5" font-weight="600">Sub-token Normalization</text>
+    <text x="42" y="32" fill="#8A8478" font-size="10">camelCase &amp; snake_case split into root semantic stems</text>
+
+    <!-- Stage 2 -->
+    <rect x="0" y="52" width="340" height="42" rx="8" fill="#22201C" stroke="#36332C" stroke-width="1" />
+    <circle cx="22" cy="73" r="10" fill="#D97757" fill-opacity="0.2" />
+    <text x="18" y="77" fill="#E29A76" font-size="11" font-weight="bold">2</text>
+    <text x="42" y="70" fill="#EAE6DF" font-size="11.5" font-weight="600">IDF Frequency Weighting</text>
+    <text x="42" y="84" fill="#8A8478" font-size="10">Rare domain terms score significantly higher than common boilerplate</text>
+
+    <!-- Stage 3 -->
+    <rect x="0" y="104" width="340" height="42" rx="8" fill="#22201C" stroke="#36332C" stroke-width="1" />
+    <circle cx="22" cy="125" r="10" fill="#D97757" fill-opacity="0.2" />
+    <text x="18" y="129" fill="#E29A76" font-size="11" font-weight="bold">3</text>
+    <text x="42" y="122" fill="#EAE6DF" font-size="11.5" font-weight="600">Definition Site &amp; Literal Name Boost</text>
+    <text x="42" y="136" fill="#8A8478" font-size="10">function, class, def markers receive +150% score boost</text>
+
+    <!-- Stage 4 -->
+    <rect x="0" y="156" width="340" height="42" rx="8" fill="#22201C" stroke="#36332C" stroke-width="1" />
+    <circle cx="22" cy="177" r="10" fill="#D97757" fill-opacity="0.2" />
+    <text x="18" y="181" fill="#E29A76" font-size="11" font-weight="bold">4</text>
+    <text x="42" y="174" fill="#EAE6DF" font-size="11.5" font-weight="600">File Length Penalty</text>
+    <text x="42" y="188" fill="#8A8478" font-size="10">Prevents oversized monolith files from hogging context</text>
+  </g>
+
+  <!-- Right: Priority Packing Budget Bar -->
+  <g transform="translate(410, 90)">
+    <rect x="0" y="0" width="350" height="198" rx="8" fill="#1E1C1A" stroke="#333029" stroke-width="1" />
+    <text x="16" y="24" fill="#EAE6DF" font-size="12" font-weight="700">Strict Priority Budget Allocation</text>
+    <text x="16" y="42" fill="#8A8478" font-size="10.5">Prompt buffer guarantees no silent dropping of messages</text>
+
+    <!-- Visual Stack of Tokens -->
+    <g transform="translate(16, 56)">
+      <!-- System Prompt -->
+      <rect x="0" y="0" width="318" height="24" rx="4" fill="#3D3A32" />
+      <text x="10" y="16" fill="#FAF5EE" font-size="10.5" font-weight="600">1. System Prompt &amp; Model Directives</text>
+
+      <!-- User Query -->
+      <rect x="0" y="28" width="318" height="24" rx="4" fill="#473C35" />
+      <text x="10" y="44" fill="#FAF5EE" font-size="10.5" font-weight="600">2. Active User Prompt &amp; Question</text>
+
+      <!-- Attachments -->
+      <rect x="0" y="56" width="318" height="24" rx="4" fill="#5E4338" />
+      <text x="10" y="72" fill="#FAF5EE" font-size="10.5" font-weight="600">3. Explicit Document &amp; Code Attachments</text>
+
+      <!-- Pinned Files -->
+      <rect x="0" y="84" width="318" height="24" rx="4" fill="#8C4D35" />
+      <text x="10" y="100" fill="#FAF5EE" font-size="10.5" font-weight="600">4. Sidebar Pinned Codebase Files</text>
+
+      <!-- Ranked Files -->
+      <rect x="0" y="112" width="220" height="24" rx="4" fill="#D97757" />
+      <text x="10" y="128" fill="#181715" font-size="10.5" font-weight="700">5. Ranked Project Files</text>
+
+      <!-- Remaining / History -->
+      <rect x="224" y="112" width="94" height="24" rx="4" fill="#292723" stroke="#423E37" stroke-dasharray="3 3" />
+      <text x="232" y="128" fill="#888276" font-size="9.5">Remaining History</text>
+    </g>
+  </g>
+</svg>

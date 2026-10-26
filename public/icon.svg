@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#23221E" />
+      <stop offset="50%" stop-color="#191816" />
+      <stop offset="100%" stop-color="#100F0E" />
+    </linearGradient>
+
+    <!-- Accent Spokes Gradient -->
+    <linearGradient id="spokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EAA684" />
+      <stop offset="50%" stop-color="#D97757" />
+      <stop offset="100%" stop-color="#B85536" />
+    </linearGradient>
+
+    <!-- Subtle Glow Filter -->
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- Inner Radial Ambient -->
+    <radialGradient id="ambientGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#D97757" stop-opacity="0.18" />
+      <stop offset="70%" stop-color="#D97757" stop-opacity="0.03" />
+      <stop offset="100%" stop-color="#D97757" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Squircle Base -->
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bgGrad)" stroke="#383630" stroke-width="2.5" />
+  <rect x="10.5" y="10.5" width="235" height="235" rx="53.5" fill="none" stroke="#EAA684" stroke-opacity="0.12" stroke-width="1.5" />
+
+  <!-- Ambient Center Glow -->
+  <circle cx="128" cy="128" r="88" fill="url(#ambientGlow)" />
+
+  <!-- Outer Faint Calibration Ring -->
+  <circle cx="128" cy="128" r="76" stroke="#D97757" stroke-opacity="0.16" stroke-width="1.5" stroke-dasharray="4 6" />
+
+  <!-- Inner Center Ring -->
+  <circle cx="128" cy="128" r="28" stroke="#D97757" stroke-opacity="0.32" stroke-width="2" />
+  <circle cx="128" cy="128" r="6" fill="#EAA684" fill-opacity="0.85" />
+
+  <!-- The 8 Spokes -->
+  <g stroke="url(#spokeGrad)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" filter="url(#softGlow)">
+    <!-- Vertical Spoke (top & bottom) -->
+    <line x1="128" y1="46" x2="128" y2="88" />
+    <line x1="128" y1="168" x2="128" y2="210" />
+
+    <!-- Horizontal Spoke (left & right) -->
+    <line x1="46" y1="128" x2="88" y2="128" />
+    <line x1="168" y1="128" x2="210" y2="128" />
+
+    <!-- Diagonal Spoke (top-left & bottom-right) -->
+    <line x1="70" y1="70" x2="100" y2="100" />
+    <line x1="156" y1="156" x2="186" y2="186" />
+
+    <!-- Diagonal Spoke (top-right & bottom-left) -->
+    <line x1="186" y1="70" x2="156" y2="100" />
+    <line x1="100" y1="156" x2="70" y2="186" />
+  </g>
+</svg>
