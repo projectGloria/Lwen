@@ -1,6 +1,6 @@
 id = "Lwen"
 name = "Lwen"
-version = "1.0.0"
+version = "1.0.1"
 main_exe = "lwen.exe"
 icon = "src-tauri/icons/icon.ico"
 accent = "#8b5cf6"
